@@ -30,26 +30,39 @@ function HasteResolverPlugin(options) {
 
 module.exports = HasteResolverPlugin;
 
+
+
 HasteResolverPlugin.prototype.apply = function(compiler) {
   var getHasteMap = this.getHasteMap;
   var platform = this.platform;
 
-  compiler.resolvers.normal.plugin("module", function(request, callback) {
+  compiler.plugin("after-resolvers", function(compiler) {
 
-    getHasteMap.then(function(hasteMap){
-      var mod = hasteMap.getModule(request.request, platform);
-      if (mod) {
-        this.doResolve("file", {
-          request: mod.path,
-          query: request.query,
-          directory: request.directory
-        }, callback);
-      } else {
-        callback();
-      }
-      // TODO: require('./foo') when exist foo.web.js、foo.ios.js
-    }.bind(this))
+    // Install project dependencies on demand
+    compiler.resolvers.normal.plugin("module", function(request, callback) {
 
-  })
+      getHasteMap.then(function(hasteMap){
+
+        var mod = hasteMap.getModule(request.request, platform);
+        if (mod) {
+
+          // console.log("--------------------11",mod.path)
+          this.doResolve("file", {
+            request: mod.path,
+            query: request.query,
+            directory: request.directory
+          }, callback);
+          // console.log("--------------------222322",mod.path)
+        } else {
+          callback();
+        }
+        // TODO: require('./foo') when exist foo.web.js、foo.ios.js
+      }.bind(this))
+
+    });
+
+
+  }.bind(this))
+
 
 };
